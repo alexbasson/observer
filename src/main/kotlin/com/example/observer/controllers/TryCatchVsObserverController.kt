@@ -1,6 +1,8 @@
 package com.example.observer.controllers
 
 import com.example.observer.domain.InvalidInputException
+import com.example.observer.domain.ObserverUseCase
+import com.example.observer.domain.ObserverUseCaseOutcomeHandler
 import com.example.observer.domain.Outcome2Exception
 import com.example.observer.domain.Outcome3Exception
 import com.example.observer.domain.TryCatchUseCase
@@ -11,7 +13,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class TryCatchVsObserverController(
-    val tryCatchUseCase: TryCatchUseCase
+    private val tryCatchUseCase: TryCatchUseCase,
+    private var observerUseCase: ObserverUseCase
 ) {
 
     @GetMapping("tryCatch")
@@ -28,4 +31,26 @@ class TryCatchVsObserverController(
         }
     }
 
+    @GetMapping("observer")
+    public fun observerPattern(@RequestParam("option") option: String): ResponseEntity<String> {
+        return observerUseCase.execute(option, ObserverUseCaseResponseEntityOutcomeHandler())
+    }
+
+    private class ObserverUseCaseResponseEntityOutcomeHandler : ObserverUseCaseOutcomeHandler<ResponseEntity<String>> {
+        override fun happyPath(message: String): ResponseEntity<String> {
+            return ResponseEntity.ok(message)
+        }
+
+        override fun outcome2(message: String): ResponseEntity<String> {
+            return ResponseEntity.ok(message)
+        }
+
+        override fun outcome3(message: String): ResponseEntity<String> {
+            return ResponseEntity.ok(message)
+        }
+
+        override fun invalidInput(message: String): ResponseEntity<String> {
+            return ResponseEntity.badRequest().body(message)
+        }
+    }
 }
